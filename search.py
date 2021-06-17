@@ -1,24 +1,29 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from os import listdir
+from os import listdir, startfile
 
+# make the results be shown in flat buttons for them tp look like labels
+
+# use that to open folders:
+# from os import startfile
+# startfile(path)
 
 class signal_emitter(QtCore.QObject):
-	search_result_signal = QtCore.pyqtSignal(str)
+    search_result_signal = QtCore.pyqtSignal(str)
 
-	def search(self, path, search_item):
-	    directories = listdir(path)
-	    if search_item in directories:
-	        self.search_result_signal.emit(f'found perfect match for "{search_item}"  in path: {path}\n\n')
-	    for directory in directories:
-	        if search_item.lower() in directory.lower() and search_item != directory:
-	            #check if the string given is a part of the (file / folder)'s name
-	            self.search_result_signal.emit(f'found match for "{search_item}"  in path: {path}\n\n')
-
-	        if "." not in directory:                # when checking for a folder
-	            try:
-	                self.search(path + directory + "/" , search_item)
-	            except:
-	                pass
+    @QtCore.pyqtSlot(str, str)
+    def search(self, path, search_item):
+        directories = listdir(path)
+        if search_item in directories:
+            self.search_result_signal.emit(f'found perfect match for "{search_item}"  in path: {path}')
+        for directory in directories:
+            if search_item.lower() in directory.lower() and search_item != directory:
+                #check if the string given is a part of the (file / folder)'s name
+                self.search_result_signal.emit(f'found match for "{search_item}"  in path: {path}') 
+            if "." not in directory:                # when checking for a folder
+                try:
+                    self.search(path + directory + "/" , search_item)
+                except:
+                    pass
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -26,6 +31,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('search.ui', self)
         self.search_item = ""
         self.search_path = []
+        self.index = 0
         self.setupUi()
 
     def setupUi(self):
@@ -47,7 +53,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.F.stateChanged.connect(lambda state: self.append_path(state, "F:/"))
         self.other.stateChanged.connect(self.other_checked)
         self.browse.clicked.connect(self.get_path)
-        self.search_thread.search_result_signal.connect(self.results_area.append)
+        self.search_thread.search_result_signal.connect(self.print_results)
+        
 
     def get_path(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(self)
@@ -71,10 +78,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.search_path.append(path)
         else:
             self.search_path.remove(path)
-        print(self.search_path)
 
     def get_results(self):
-        self.results_area.clear()
+        #self.results_area.clear()
         if not self.Search_entry.text():
         	msg = QtWidgets.QMessageBox()
         	msg.setIcon(QtWidgets.QMessageBox.Critical)
@@ -94,7 +100,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         for path in self.search_path:
             try:
-                self.search_thread.search(path, self.search_item)
+                QtCore.QMetaObject.invokeMethod(self.search_thread, "search",
+                QtCore.Qt.QueuedConnection,
+                QtCore.Q_ARG(str, path),
+                QtCore.Q_ARG(str, self.search_item))
             except Exception as e:
                 print(e)
                 msg = QtWidgets.QMessageBox()
@@ -106,8 +115,16 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 msg.exec_()
                 return
         
-        if not self.results_area.toPlainText():
-        	self.results_area.setText("\n\n\t\t\tNo results found for \"" + self.Search_entry.text() + '"')  
+        #if not self.results_area.toPlainText():
+        #	self.results_area.setText("\n\n\t\t\tNo results found for \"" + self.Search_entry.text() + '"')  
+
+    def print_results(self, result):
+        self.pushButton = QtWidgets.QPushButton(self.Results)
+        self.pushButton.setGeometry(QtCore.QRect(10, self.index + 25, 930, 60))
+        self.pushButton.setText(result)
+        self.pushButton.setFlat(True)
+        self.pushButton.clicked.connect(lambda :startfile(result[result.index(': ')+2:]))
+        self.index += 60
 
     def closeEvent(self, event):
         self.search_path.clear()
