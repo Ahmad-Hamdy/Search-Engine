@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
+    <width>1500</width>
     <height>900</height>
    </rect>
   </property>
@@ -55,8 +55,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>978</width>
-         <height>853</height>
+         <width>1478</width>
+         <height>878</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -251,11 +251,17 @@
             </spacer>
            </item>
            <item>
-            <widget class="QGroupBox" name="Results">
+            <widget class="QGroupBox" name="results_area">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="minimumSize">
               <size>
-               <width>0</width>
-               <height>500</height>
+               <width>932</width>
+               <height>200</height>
               </size>
              </property>
              <property name="title">
@@ -272,7 +278,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

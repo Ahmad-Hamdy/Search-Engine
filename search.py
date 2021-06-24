@@ -31,7 +31,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('search.ui', self)
         self.search_item = ""
         self.search_path = []
-        self.index = 0
+        self.results_height = 0
         self.setupUi()
 
     def setupUi(self):
@@ -45,6 +45,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.thread.start()
         self.search_thread.moveToThread(self.thread)
 
+        self.results_layout = QtWidgets.QVBoxLayout();
+        self.results_area.setLayout(self.results_layout);
+
         self.Search_entry.textChanged.connect(self.set_search_item)
         self.Search_entry.returnPressed.connect(self.get_results)
         self.Search_btn.clicked.connect(self.get_results)
@@ -53,7 +56,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.F.stateChanged.connect(lambda state: self.append_path(state, "F:/"))
         self.other.stateChanged.connect(self.other_checked)
         self.browse.clicked.connect(self.get_path)
-        self.search_thread.search_result_signal.connect(self.print_results)
+        self.search_thread.search_result_signal.connect(lambda result: self.print_results(result))
         
 
     def get_path(self):
@@ -80,7 +83,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.search_path.remove(path)
 
     def get_results(self):
-        #self.results_area.clear()
         if not self.Search_entry.text():
         	msg = QtWidgets.QMessageBox()
         	msg.setIcon(QtWidgets.QMessageBox.Critical)
@@ -119,12 +121,16 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         #	self.results_area.setText("\n\n\t\t\tNo results found for \"" + self.Search_entry.text() + '"')  
 
     def print_results(self, result):
-        self.pushButton = QtWidgets.QPushButton(self.Results)
-        self.pushButton.setGeometry(QtCore.QRect(10, self.index + 25, 930, 60))
+        print(result)
+        self.pushButton = QtWidgets.QPushButton(self.results_area)
+        self.results_layout.addWidget(self.pushButton)
+        self.pushButton.setGeometry(QtCore.QRect(10, 25, 930, 60))
         self.pushButton.setText(result)
         self.pushButton.setFlat(True)
+        self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(lambda :startfile(result[result.index(': ')+2:]))
-        self.index += 60
+        self.results_area.setMinimumHeight(self.results_height + 49)
+        self.results_height += 49
 
     def closeEvent(self, event):
         self.search_path.clear()
