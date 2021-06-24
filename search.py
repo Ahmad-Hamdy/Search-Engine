@@ -1,24 +1,18 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from os import listdir, startfile
 
-# make the results be shown in flat buttons for them tp look like labels
-
-# use that to open folders:
-# from os import startfile
-# startfile(path)
-
 class signal_emitter(QtCore.QObject):
     search_result_signal = QtCore.pyqtSignal(str)
 
     @QtCore.pyqtSlot(str, str)
     def search(self, path, search_item):
         directories = listdir(path)
-        if search_item in directories:
-            self.search_result_signal.emit(f'found perfect match for "{search_item}"  in path: {path}')
+        if search_item.lower() in map(str.lower, directories):
+            self.search_result_signal.emit(f'Perfect match "{search_item}"  in path: {path}')
         for directory in directories:
-            if search_item.lower() in directory.lower() and search_item != directory:
+            if search_item.lower() in directory.lower() and search_item.lower() != directory.lower():
                 #check if the string given is a part of the (file / folder)'s name
-                self.search_result_signal.emit(f'found match for "{search_item}"  in path: {path}') 
+                self.search_result_signal.emit(f'Match "{directory}"  in path: {path}') 
             if "." not in directory:                # when checking for a folder
                 try:
                     self.search(path + directory + "/" , search_item)
@@ -117,17 +111,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 msg.exec_()
                 return
         
-        #if not self.results_area.toPlainText():
-        #	self.results_area.setText("\n\n\t\t\tNo results found for \"" + self.Search_entry.text() + '"')  
-
     def print_results(self, result):
-        print(result)
         self.pushButton = QtWidgets.QPushButton(self.results_area)
-        self.results_layout.addWidget(self.pushButton)
-        self.pushButton.setGeometry(QtCore.QRect(10, 25, 930, 60))
+        self.results_layout.addWidget(self.pushButton, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.pushButton.setText(result)
+        if 'Perfect' in result:
+            self.pushButton.setStyleSheet("color: rgb(0, 182, 0);")
         self.pushButton.setFlat(True)
-        self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(lambda :startfile(result[result.index(': ')+2:]))
         self.results_area.setMinimumHeight(self.results_height + 49)
         self.results_height += 49
