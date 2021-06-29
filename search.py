@@ -51,7 +51,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.other.stateChanged.connect(self.other_checked)
         self.browse.clicked.connect(self.get_path)
         self.search_thread.search_result_signal.connect(lambda result: self.print_results(result))
-        
 
     def get_path(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(self)
